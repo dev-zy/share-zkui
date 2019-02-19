@@ -4,9 +4,8 @@
 
     <groupId>com.deem</groupId>
     <artifactId>zkui</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <version>2.1</version>
     <packaging>jar</packaging>
-
     <name>zkui</name>
     <url>http://maven.apache.org</url>
 	<properties>
@@ -16,81 +15,48 @@
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 		<metrics.version>3.2.6</metrics.version>
-		<spring.version>4.3.21.RELEASE</spring.version>
-		<spring-boot.version>1.5.18.RELEASE</spring-boot.version>
+		<jetty.version>9.4.12.v20180830</jetty.version>
 	</properties>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<!-- (依赖管理：继承一些默认的依赖，工程需要依赖的jar包的管理，申明其他dependency的时候就不需要version) -->
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-starter-parent</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-			    <groupId>io.dropwizard.metrics</groupId>
-			    <artifactId>metrics-parent</artifactId>
-			    <version>${metrics.version}</version>
-			    <type>pom</type>
-			    <scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
     <dependencies>
-    	<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>  
-		        <exclusion>  
-		            <groupId>org.springframework.boot</groupId>  
-		            <artifactId>spring-boot-starter-tomcat</artifactId>  
-		        </exclusion>  
-		    </exclusions>
-		</dependency>
-		<dependency>
-		    <groupId>org.springframework.boot</groupId>  
-		    <artifactId>spring-boot-starter-jetty</artifactId>  
-		</dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-webapp</artifactId>
+            <version>${jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-annotations</artifactId>
+            <version>${jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.25</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>1.4.197</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
@@ -130,6 +96,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.47</version>
         </dependency>
         <dependency>
             <groupId>freemarker</groupId>
@@ -140,18 +107,6 @@
     </dependencies>
     <build>
         <plugins>
-        	<plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.0.1.RELEASE</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -174,41 +129,67 @@
 						</manifestEntries>
 					</archive>
 					<excludes>
-						<exclude>log4j2.properties</exclude>
+						<exclude>log4j.properties</exclude>
 						<exclude>application.properties</exclude>
 						<exclude>bin/*</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.0.1</version>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/lib</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>appassembler-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<configuration>
+					<repositoryLayout>flat</repositoryLayout>
+					<repositoryName>lib</repositoryName>
+					<binFileName>zkui</binFileName>
+					<binFolder>bin</binFolder>
+					<assembleDirectory>${project.build.directory}/${project.name}</assembleDirectory>
+					<configurationDirectory>config</configurationDirectory>
+					<copyConfigurationDirectory>true</copyConfigurationDirectory>
+					<configurationSourceDirectory>src/main/resources</configurationSourceDirectory>
+					<includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+					<extraJvmArguments>-Xms128m</extraJvmArguments>
+					<target>${project.build.directory}</target>
+					<platforms>
+						<platform>windows</platform>  
+                      	<platform>unix</platform>
+					</platforms>
+					<binFileExtensions>
+                        <unix>.sh</unix>
+                        <windows>.bat</windows>
+                    </binFileExtensions>
+                    <programs>
+						<program>
+							<name>zkui</name>
+							<!-- 启动类 -->
+							<mainClass>com.devzy.share.zkui.Main</mainClass>
+							<jvmSettings>
+								<extraArguments>
+									<extraArgument>-server</extraArgument>
+									<extraArgument>-Xmx1G</extraArgument>
+									<extraArgument>-Xms1G</extraArgument>
+									<extraArgument>-XX:+UseG1GC</extraArgument>
+									<extraArgument>-Xloggc:/tmp/log/gc.log</extraArgument>
+									<extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
+									<extraArgument>-XX:+PrintGCDetails</extraArgument>
+									<extraArgument>-XX:+PrintGCTimeStamps</extraArgument>
+									<extraArgument>-Dbase.path=../</extraArgument>
+								</extraArguments>
+							</jvmSettings>
+						</program>
+					</programs>
+				</configuration>
 			</plugin>
             <plugin>
+            	<groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.deem.zkui.Main</mainClass>
-                        </manifest>
-                    </archive>
+                    <appendAssemblyId>false</appendAssemblyId>
                     <!-- <descriptors>
 						<descriptor>assembly.xml</descriptor>
 					</descriptors> -->
-                    <descriptorRefs>
+					<descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                 </configuration>

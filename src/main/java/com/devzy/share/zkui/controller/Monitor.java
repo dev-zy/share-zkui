@@ -1,0 +1,69 @@
+/**
+ *
+ * Copyright (c) 2014, Deem Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ */
+package com.devzy.share.zkui.controller;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.devzy.share.zkui.utils.CmdUtil;
+import com.devzy.share.zkui.utils.PropertiesConfigUtil;
+import com.devzy.share.zkui.utils.ServletUtil;
+
+import freemarker.template.TemplateException;
+
+@SuppressWarnings("serial")
+@WebServlet(urlPatterns = {"/monitor"})
+public class Monitor extends HttpServlet {
+
+    private final static Logger logger = LoggerFactory.getLogger(Monitor.class);
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        logger.debug("Monitor Action!");
+        try {
+            String zkServer = PropertiesConfigUtil.getString("zkServer");
+            String[] zkServerLst = zkServer.split(",");
+
+            Map<String, Object> templateParam = new HashMap<>();
+            StringBuffer stats = new StringBuffer();
+            for (String zkObj : zkServerLst) {
+                stats.append("<br/><hr/><br/>").append("Server: ").append(zkObj).append("<br/><hr/><br/>");
+                String[] monitorZKServer = zkObj.split(":");
+                stats.append(CmdUtil.INSTANCE.executeCmd("stat", monitorZKServer[0], monitorZKServer[1]));
+                stats.append(CmdUtil.INSTANCE.executeCmd("envi", monitorZKServer[0], monitorZKServer[1]));
+            }
+            templateParam.put("stats", stats);
+            ServletUtil.INSTANCE.renderHtml(request, response, templateParam, "monitor.ftl.html");
+
+        } catch (IOException | TemplateException ex) {
+            logger.error(Arrays.toString(ex.getStackTrace()));
+            ServletUtil.INSTANCE.renderError(request, response, ex.getMessage());
+        }
+    }
+}
