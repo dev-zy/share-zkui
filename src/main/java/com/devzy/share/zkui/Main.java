@@ -32,7 +32,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
     	String DEFAULT_PATH = Main.class.getResource("/").getPath();
-    	String BASE_PATH = System.getProperty("base.path",DEFAULT_PATH);
+    	String BASEDIR = System.getProperty("basedir");
+    	String BASE_PATH = BASEDIR!=null?BASEDIR:System.getProperty("base.path",DEFAULT_PATH);
         logger.info("Starting ZKUI!"+BASE_PATH);
         String conf = BASE_PATH+"/application.properties";
         if(!FileUtils.exists(conf)) {

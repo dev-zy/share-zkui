@@ -140,9 +140,12 @@
 				<artifactId>appassembler-maven-plugin</artifactId>
 				<version>2.0.0</version>
 				<configuration>
+					<encoding>UTF-8</encoding>
+                    <logsDirectory>logs</logsDirectory>
+                    <tempDirectory>tmp</tempDirectory>
 					<repositoryLayout>flat</repositoryLayout>
 					<repositoryName>lib</repositoryName>
-					<binFileName>zkui</binFileName>
+					<binFileName>${project.artifactId}</binFileName>
 					<binFolder>bin</binFolder>
 					<assembleDirectory>${project.build.directory}/${project.name}</assembleDirectory>
 					<configurationDirectory>config</configurationDirectory>
@@ -159,9 +162,10 @@
                         <unix>.sh</unix>
                         <windows>.bat</windows>
                     </binFileExtensions>
+                    <unixScriptTemplate></unixScriptTemplate>
                     <programs>
 						<program>
-							<name>zkui</name>
+							<name>${project.artifactId}</name>
 							<!-- 启动类 -->
 							<mainClass>com.devzy.share.zkui.Main</mainClass>
 							<jvmSettings>
@@ -170,28 +174,41 @@
 									<extraArgument>-Xmx1G</extraArgument>
 									<extraArgument>-Xms1G</extraArgument>
 									<extraArgument>-XX:+UseG1GC</extraArgument>
-									<extraArgument>-Xloggc:/tmp/log/gc.log</extraArgument>
+									<extraArgument>-Xloggc:../logs/gc.log</extraArgument>
 									<extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
 									<extraArgument>-XX:+PrintGCDetails</extraArgument>
 									<extraArgument>-XX:+PrintGCTimeStamps</extraArgument>
-									<extraArgument>-Dbase.path=../</extraArgument>
+									<extraArgument>-Dlog4j.configuration=log4j.properties</extraArgument>
 								</extraArguments>
 							</jvmSettings>
 						</program>
 					</programs>
 				</configuration>
+				<!-- <goals>
+			       <goal>assemble</goal>
+			       <goal>package</goal>
+			    </goals> -->
+				<executions>
+                    <execution>
+                        <id>make-appassembler</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
 			</plugin>
             <plugin>
             	<groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <appendAssemblyId>false</appendAssemblyId>
-                    <!-- <descriptors>
-						<descriptor>assembly.xml</descriptor>
-					</descriptors> -->
-					<descriptorRefs>
+					<!-- <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    </descriptorRefs> -->
+                    <descriptors>
+						<descriptor>assembly.xml</descriptor>
+					</descriptors>
                 </configuration>
                 <executions>
                     <execution>
