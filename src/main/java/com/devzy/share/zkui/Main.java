@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Date;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
@@ -73,29 +74,46 @@ public class Main {
         HandlerList handlers = new HandlerList();
         handlers.setHandlers(new Handler[]{staticResourceHandler, servletContextHandler});
         server.setHandler(handlers); 
-        
+        String port = System.getenv("SERVER_PORT");
+        if(StringUtils.isBlank(port)) {
+        	port = globalProps.getString("server.port","9090");
+        }
         HttpConfiguration http_config = new HttpConfiguration();
         http_config.setSecureScheme("https");
-        http_config.setSecurePort(Integer.parseInt(globalProps.getString("serverPort")));
-        
-        if (globalProps.getProperty("https").equals("true")) {
-            File keystoreFile = new File(globalProps.getString("keystoreFile"));
+        http_config.setSecurePort(Integer.parseInt(port));
+        String httpsEnabled = System.getenv("https_enabled");
+        if(StringUtils.isBlank(port)) {
+        	httpsEnabled = globalProps.getString("https.enabled","false");
+        }
+        if (httpsEnabled.equals("true")) {
+        	String file = System.getenv("KEYSTORE_FILE");
+            if(StringUtils.isBlank(port)) {
+            	file = globalProps.getString("keystore.file");
+            }
+            String pwd = System.getenv("KEYSTORE_PWD");
+            if(StringUtils.isBlank(port)) {
+            	pwd = globalProps.getString("keystore.pwd");
+            }
+            String mpwd = System.getenv("KEYSTORE_PWD");
+            if(StringUtils.isBlank(port)) {
+            	mpwd = globalProps.getString("keystore.manager.pwd");
+            }
+            File keystoreFile = new File(file);
             SslContextFactory sslContextFactory = new SslContextFactory();
             sslContextFactory.setKeyStorePath(keystoreFile.getAbsolutePath());
-            sslContextFactory.setKeyStorePassword(globalProps.getString("keystorePwd"));
-            sslContextFactory.setKeyManagerPassword(globalProps.getString("keystoreManagerPwd"));
-            HttpConfiguration https_config = new HttpConfiguration(http_config);
-            https_config.addCustomizer(new SecureRequestCustomizer());
-
-            ServerConnector https = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory(https_config));
-            https.setPort(Integer.parseInt(globalProps.getString("serverPort")));
+            sslContextFactory.setKeyStorePassword(pwd);
+            sslContextFactory.setKeyManagerPassword(mpwd);
+            HttpConfiguration HTTPS_CONFIG = new HttpConfiguration(http_config);
+            HTTPS_CONFIG.addCustomizer(new SecureRequestCustomizer());
+            ServerConnector https = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory(HTTPS_CONFIG));
+            https.setPort(Integer.parseInt(port));
             server.setConnectors(new Connector[]{https});
         } else {
             if(globalProps.getProperty("X-Forwarded-For").equals("true")) {
                 http_config.addCustomizer(new org.eclipse.jetty.server.ForwardedRequestCustomizer());
             }
             ServerConnector http = new ServerConnector(server, new HttpConnectionFactory(http_config));
-            http.setPort(Integer.parseInt(globalProps.getString("serverPort")));
+            http.setPort(Integer.parseInt(port));
             server.setConnectors(new Connector[]{http});
         }
         server.start();

@@ -40,6 +40,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,10 @@ public class Import extends HttpServlet {
         logger.debug("Importing Action!");
         try {
             Dao dao = new Dao();
-            String zkServer = PropertiesConfigUtil.getString("zkServer");
+            String zkServer = System.getenv("ZK_HOSTS");
+            if(StringUtils.isBlank(zkServer)) {
+            	zkServer = PropertiesConfigUtil.getString("zkServer","localhost:2181");
+            }
             String[] zkServerLst = zkServer.split(",");
 
             StringBuilder sbFile = new StringBuilder();

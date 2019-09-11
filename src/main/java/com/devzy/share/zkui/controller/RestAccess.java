@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
@@ -50,7 +51,10 @@ public class RestAccess extends HttpServlet {
         logger.debug("Rest Action!");
         ZooKeeper zk = null;
         try {
-            String zkServer = PropertiesConfigUtil.getString("zkServer");
+        	String zkServer = System.getenv("ZK_HOSTS");
+            if(StringUtils.isBlank(zkServer)) {
+            	zkServer = PropertiesConfigUtil.getString("zkServer","localhost:2181");
+            }
             String[] zkServerLst = zkServer.split(",");
             String accessRole = ZooKeeperUtil.ROLE_USER;
             if ((PropertiesConfigUtil.getProperty("blockPwdOverRest") != null) && (Boolean.valueOf(PropertiesConfigUtil.getString("blockPwdOverRest")) == Boolean.FALSE)) {

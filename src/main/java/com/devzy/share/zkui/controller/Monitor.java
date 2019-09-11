@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,10 @@ public class Monitor extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.debug("Monitor Action!");
         try {
-            String zkServer = PropertiesConfigUtil.getString("zkServer");
+        	String zkServer = System.getenv("ZK_HOSTS");
+            if(StringUtils.isBlank(zkServer)) {
+            	zkServer = PropertiesConfigUtil.getString("zkServer","localhost:2181");
+            }
             String[] zkServerLst = zkServer.split(",");
 
             Map<String, Object> templateParam = new HashMap<>();

@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
@@ -55,9 +56,11 @@ public class Home extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.debug("Home Get Action!");
         try {
-            String zkServer = PropertiesConfigUtil.getString("zkServer");
+        	String zkServer = System.getenv("ZK_HOSTS");
+            if(StringUtils.isBlank(zkServer)) {
+            	zkServer = PropertiesConfigUtil.getString("zkServer","localhost:2181");
+            }
             String[] zkServerLst = zkServer.split(",");
-
             Map<String, Object> templateParam = new HashMap<>();
             String zkPath = request.getParameter("zkPath");
             String navigate = request.getParameter("navigate");
@@ -115,7 +118,10 @@ public class Home extends HttpServlet {
         logger.debug("Home Post Action!");
         try {
             Dao dao = new Dao();
-            String zkServer = PropertiesConfigUtil.getString("zkServer");
+            String zkServer = System.getenv("ZK_HOSTS");
+            if(StringUtils.isBlank(zkServer)) {
+            	zkServer = PropertiesConfigUtil.getString("zkServer","localhost:2181");
+            }
             String[] zkServerLst = zkServer.split(",");
 
             Map<String, Object> templateParam = new HashMap<>();
