@@ -15,7 +15,7 @@
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 		<metrics.version>3.2.6</metrics.version>
-		<jetty.version>9.4.41.v20210516</jetty.version>
+		<jetty.version>9.4.44.v20210927</jetty.version>
 	</properties>
 	<dependencies>
 		<dependency>
